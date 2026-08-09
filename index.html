@@ -29,10 +29,76 @@ pre{
     white-space:pre;
     text-align:center;
 }
+
+#intro{
+    font-family:'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    font-size:1.2rem;
+    cursor:pointer;
+    opacity:1;
+    transition:opacity 0.8s ease;
+}
+
+#intro.hidden{
+    opacity:0;
+    pointer-events:none;
+}
+
+#reveal{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    opacity:0;
+    transition:opacity 0.8s ease;
+}
+
+#reveal.visible{
+    opacity:1;
+}
+
+#bg-video{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:0;
+}
+
+#reveal pre{
+    position:relative;
+    z-index:1;
+    opacity:0.6;
+    background:linear-gradient(90deg, #ffffff, #888888, #ffffff);
+    background-size:200% 100%;
+    background-clip:text;
+    -webkit-background-clip:text;
+    color:transparent;
+    -webkit-text-fill-color:transparent;
+    animation:sweep 3s linear infinite;
+}
+
+@keyframes sweep{
+    0%{
+        background-position:200% 0;
+    }
+    100%{
+        background-position:0% 0;
+    }
+}
 </style>
 </head>
 <body>
 
+<div id="intro">Click to enter</div>
+
+<div id="reveal">
+<video id="bg-video" playsinline></video>
 <pre>
  ██████╗ ██████╗ ███╗   ███╗██╗███╗   ██╗ ██████╗     ███████╗ ██████╗  ██████╗ ███╗   ██╗
 ██╔════╝██╔═══██╗████╗ ████║██║████╗  ██║██╔════╝     ██╔════╝██╔═══██╗██╔═══██╗████╗  ██║
@@ -41,6 +107,63 @@ pre{
 ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║██║ ╚████║╚██████╔╝    ███████║╚██████╔╝╚██████╔╝██║ ╚████║
  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝     ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝
 </pre>
+</div>
+
+<script>
+var video = document.getElementById('bg-video');
+var targetVolume = 0.75;
+var currentTrack = parseInt(sessionStorage.getItem('lastTrack'), 10) || null;
+
+function playRandomTrack(fade){
+    var track;
+    do {
+        track = Math.floor(Math.random() * 4) + 1;
+    } while (track === currentTrack);
+    currentTrack = track;
+    sessionStorage.setItem('lastTrack', track);
+
+    video.src = '67/' + track + '.mp4';
+
+    if (track === 3) {
+        video.addEventListener('loadedmetadata', function setStart(){
+            video.currentTime = 9;
+            video.removeEventListener('loadedmetadata', setStart);
+        });
+    }
+
+    if (fade) {
+        var fadeDuration = 1500;
+        var fadeSteps = 30;
+        var stepTime = fadeDuration / fadeSteps;
+        var stepAmount = targetVolume / fadeSteps;
+        var currentStep = 0;
+
+        video.volume = 0;
+        video.play();
+
+        var fadeInterval = setInterval(function(){
+            currentStep++;
+            video.volume = Math.min(targetVolume, stepAmount * currentStep);
+            if (currentStep >= fadeSteps) {
+                clearInterval(fadeInterval);
+            }
+        }, stepTime);
+    } else {
+        video.volume = targetVolume;
+        video.play();
+    }
+}
+
+video.addEventListener('ended', function(){
+    playRandomTrack(false);
+});
+
+document.body.addEventListener('click', function(){
+    document.getElementById('intro').classList.add('hidden');
+    document.getElementById('reveal').classList.add('visible');
+    playRandomTrack(true);
+}, { once: true });
+</script>
 
 </body>
 </html>
