@@ -98,7 +98,7 @@ pre{
 <div id="intro">Click to enter</div>
 
 <div id="reveal">
-<video id="bg-video" playsinline></video>
+<video id="bg-video" src="67/5.mp4" loop playsinline></video>
 <pre>
  ██████╗ ██████╗ ███╗   ███╗██╗███╗   ██╗ ██████╗     ███████╗ ██████╗  ██████╗ ███╗   ██╗
 ██╔════╝██╔═══██╗████╗ ████║██║████╗  ██║██╔════╝     ██╔════╝██╔═══██╗██╔═══██╗████╗  ██║
@@ -112,56 +112,27 @@ pre{
 <script>
 var video = document.getElementById('bg-video');
 var targetVolume = 0.75;
-var currentTrack = parseInt(sessionStorage.getItem('lastTrack'), 10) || null;
-
-function playRandomTrack(fade){
-    var track;
-    do {
-        track = Math.floor(Math.random() * 4) + 1;
-    } while (track === currentTrack);
-    currentTrack = track;
-    sessionStorage.setItem('lastTrack', track);
-
-    video.src = '67/' + track + '.mp4';
-
-    if (track === 3) {
-        video.addEventListener('loadedmetadata', function setStart(){
-            video.currentTime = 9;
-            video.removeEventListener('loadedmetadata', setStart);
-        });
-    }
-
-    if (fade) {
-        var fadeDuration = 1500;
-        var fadeSteps = 30;
-        var stepTime = fadeDuration / fadeSteps;
-        var stepAmount = targetVolume / fadeSteps;
-        var currentStep = 0;
-
-        video.volume = 0;
-        video.play();
-
-        var fadeInterval = setInterval(function(){
-            currentStep++;
-            video.volume = Math.min(targetVolume, stepAmount * currentStep);
-            if (currentStep >= fadeSteps) {
-                clearInterval(fadeInterval);
-            }
-        }, stepTime);
-    } else {
-        video.volume = targetVolume;
-        video.play();
-    }
-}
-
-video.addEventListener('ended', function(){
-    playRandomTrack(false);
-});
 
 document.body.addEventListener('click', function(){
     document.getElementById('intro').classList.add('hidden');
     document.getElementById('reveal').classList.add('visible');
-    playRandomTrack(true);
+
+    var fadeDuration = 1500;
+    var fadeSteps = 30;
+    var stepTime = fadeDuration / fadeSteps;
+    var stepAmount = targetVolume / fadeSteps;
+    var currentStep = 0;
+
+    video.volume = 0;
+    video.play();
+
+    var fadeInterval = setInterval(function(){
+        currentStep++;
+        video.volume = Math.min(targetVolume, stepAmount * currentStep);
+        if (currentStep >= fadeSteps) {
+            clearInterval(fadeInterval);
+        }
+    }, stepTime);
 }, { once: true });
 </script>
 
